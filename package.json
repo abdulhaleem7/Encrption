@@ -4,7 +4,8 @@
   "description": "Node.js AES encryption/decryption compatible with C# RijndaelManaged + PBKDF2",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "vercel dev"
   },
   "dependencies": {
     "express": "^5.2.1"
