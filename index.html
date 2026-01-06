@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES Encryption/Decryption Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .key-params {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .result-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            word-break: break-all;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .error {
+            background: #fee;
+            border-left-color: #e74c3c;
+        }
+
+        .error .result-label {
+            color: #e74c3c;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #004085;
+        }
+
+        .info-box strong {
+            color: #0056b3;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .tab {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 AES Encryption Tool</h1>
+        <p class="subtitle">Secure text encryption and decryption using AES-256-CBC with PBKDF2</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('encrypt')">Encrypt</button>
+            <button class="tab" onclick="switchTab('decrypt')">Decrypt</button>
+        </div>
+
+        <!-- Encrypt Tab -->
+        <div id="encrypt-tab" class="tab-content active">
+            <div class="info-box">
+                <strong>Note:</strong> Enter your plaintext and encryption parameters below. Keep your parameters safe - you'll need them to decrypt the message later.
+            </div>
+
+            <form id="encrypt-form">
+                <div class="form-group">
+                    <label for="encrypt-text">Text to Encrypt:</label>
+                    <textarea id="encrypt-text" placeholder="Enter the text you want to encrypt..." required></textarea>
+                </div>
+
+                <div class="key-params">
+                    <div class="form-group">
+                        <label for="encrypt-passphrase">PassPhrase:</label>
+                        <input type="text" id="encrypt-passphrase" placeholder="MySecretPassphrase" value="MySecretPassphrase" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="encrypt-salt">Salt Value:</label>
+                        <input type="text" id="encrypt-salt" placeholder="MySaltValue" value="MySaltValue" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="encrypt-iterations">Iterations:</label>
+                        <input type="number" id="encrypt-iterations" value="1000" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="encrypt-blocksize">Block Size:</label>
+                        <input type="number" id="encrypt-blocksize" value="32" min="16" max="32" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="encrypt-iv">Init Vector (16 chars):</label>
+                        <input type="text" id="encrypt-iv" placeholder="1234567890123456" value="1234567890123456" maxlength="16" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">🔒 Encrypt</button>
+            </form>
+
+            <div id="encrypt-result" class="result">
+                <div class="result-label">Encrypted Result:</div>
+                <div class="result-text" id="encrypt-output"></div>
+            </div>
+        </div>
+
+        <!-- Decrypt Tab -->
+        <div id="decrypt-tab" class="tab-content">
+            <div class="info-box">
+                <strong>Note:</strong> Enter the encrypted text and the same parameters used during encryption to decrypt the message.
+            </div>
+
+            <form id="decrypt-form">
+                <div class="form-group">
+                    <label for="decrypt-text">Encrypted Text:</label>
+                    <textarea id="decrypt-text" placeholder="Enter the encrypted text (Base64)..." required></textarea>
+                </div>
+
+                <div class="key-params">
+                    <div class="form-group">
+                        <label for="decrypt-passphrase">PassPhrase:</label>
+                        <input type="text" id="decrypt-passphrase" placeholder="MySecretPassphrase" value="MySecretPassphrase" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="decrypt-salt">Salt Value:</label>
+                        <input type="text" id="decrypt-salt" placeholder="MySaltValue" value="MySaltValue" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="decrypt-iterations">Iterations:</label>
+                        <input type="number" id="decrypt-iterations" value="1000" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="decrypt-blocksize">Block Size:</label>
+                        <input type="number" id="decrypt-blocksize" value="32" min="16" max="32" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="decrypt-iv">Init Vector (16 chars):</label>
+                        <input type="text" id="decrypt-iv" placeholder="1234567890123456" value="1234567890123456" maxlength="16" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">🔓 Decrypt</button>
+            </form>
+
+            <div id="decrypt-result" class="result">
+                <div class="result-label">Decrypted Result:</div>
+                <div class="result-text" id="decrypt-output"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+
+            // Hide results
+            document.querySelectorAll('.result').forEach(r => r.classList.remove('show'));
+        }
+
+        // Encrypt form handler
+        document.getElementById('encrypt-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('encrypt-result');
+            const outputDiv = document.getElementById('encrypt-output');
+            
+            const data = {
+                text: document.getElementById('encrypt-text').value,
+                key: {
+                    PassPhrase: document.getElementById('encrypt-passphrase').value,
+                    SaltValue: document.getElementById('encrypt-salt').value,
+                    PasswordIterations: parseInt(document.getElementById('encrypt-iterations').value),
+                    Blocksize: parseInt(document.getElementById('encrypt-blocksize').value),
+                    InitVector: document.getElementById('encrypt-iv').value
+                }
+            };
+
+            try {
+                const response = await fetch('/api/encrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Server error (${response.status}): ${text}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
+                }
+
+                const result = await response.json();
+
+                if (result.error) {
+                    resultDiv.classList.add('error');
+                    outputDiv.textContent = result.error;
+                } else {
+                    resultDiv.classList.remove('error');
+                    outputDiv.textContent = result.encrypted;
+                }
+                
+                resultDiv.classList.add('show');
+            } catch (error) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: ' + error.message;
+                resultDiv.classList.add('show');
+            }
+        });
+
+        // Decrypt form handler
+        document.getElementById('decrypt-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('decrypt-result');
+            const outputDiv = document.getElementById('decrypt-output');
+            
+            const data = {
+                text: document.getElementById('decrypt-text').value,
+                key: {
+                    PassPhrase: document.getElementById('decrypt-passphrase').value,
+                    SaltValue: document.getElementById('decrypt-salt').value,
+                    PasswordIterations: parseInt(document.getElementById('decrypt-iterations').value),
+                    Blocksize: parseInt(document.getElementById('decrypt-blocksize').value),
+                    InitVector: document.getElementById('decrypt-iv').value
+                }
+            };
+
+            try {
+                const response = await fetch('/api/decrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Server error (${response.status}): ${text}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
+                }
+
+                const result = await response.json();
+
+                if (result.error) {
+                    resultDiv.classList.add('error');
+                    outputDiv.textContent = result.error;
+                } else {
+                    resultDiv.classList.remove('error');
+                    outputDiv.textContent = result.decrypted;
+                }
+                
+                resultDiv.classList.add('show');
+            } catch (error) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: ' + error.message;
+                resultDiv.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>
