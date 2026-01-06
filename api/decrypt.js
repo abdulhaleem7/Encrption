@@ -18,7 +18,7 @@ function decrypt(cipherText, key) {
   return decrypted;
 }
 
-module.exports = (req, res) => {
+export default function handler(req, res) {
   // Enable CORS
   res.setHeader("Access-Control-Allow-Credentials", true);
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -56,6 +56,7 @@ module.exports = (req, res) => {
     const decrypted = decrypt(text, key);
     res.status(200).json({ decrypted });
   } catch (error) {
+    console.error("Decryption error:", error);
     res.status(500).json({ error: error.message });
   }
 };

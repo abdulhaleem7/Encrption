@@ -18,7 +18,7 @@ function encrypt(clearText, key) {
   return encrypted;
 }
 
-module.exports = (req, res) => {
+export default function handler(req, res) {
   // Enable CORS
   res.setHeader("Access-Control-Allow-Credentials", true);
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -57,6 +57,7 @@ module.exports = (req, res) => {
     const encrypted = encrypt(text, key);
     res.status(200).json({ encrypted });
   } catch (error) {
+    console.error("Encryption error:", error);
     res.status(500).json({ error: error.message });
   }
 };
