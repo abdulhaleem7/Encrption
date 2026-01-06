@@ -321,6 +321,7 @@
         </div>
     </div>
 
+    <script src="crypto.js"></script>
     <script>
         function switchTab(tab) {
             // Update tab buttons
@@ -342,45 +343,24 @@
             const resultDiv = document.getElementById('encrypt-result');
             const outputDiv = document.getElementById('encrypt-output');
             
-            const data = {
-                text: document.getElementById('encrypt-text').value,
-                key: {
-                    PassPhrase: document.getElementById('encrypt-passphrase').value,
-                    SaltValue: document.getElementById('encrypt-salt').value,
-                    PasswordIterations: parseInt(document.getElementById('encrypt-iterations').value),
-                    Blocksize: parseInt(document.getElementById('encrypt-blocksize').value),
-                    InitVector: document.getElementById('encrypt-iv').value
-                }
+            const config = {
+                PassPhrase: document.getElementById('encrypt-passphrase').value,
+                SaltValue: document.getElementById('encrypt-salt').value,
+                PasswordIterations: parseInt(document.getElementById('encrypt-iterations').value),
+                Blocksize: parseInt(document.getElementById('encrypt-blocksize').value),
+                InitVector: document.getElementById('encrypt-iv').value
             };
 
+            const text = document.getElementById('encrypt-text').value;
+
             try {
-                const response = await fetch('/api/encrypt', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(`Server error (${response.status}): ${text}`);
+                if (config.InitVector.length !== 16) {
+                    throw new Error('InitVector must be exactly 16 characters');
                 }
 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
-                }
-
-                const result = await response.json();
-
-                if (result.error) {
-                    resultDiv.classList.add('error');
-                    outputDiv.textContent = result.error;
-                } else {
-                    resultDiv.classList.remove('error');
-                    outputDiv.textContent = result.encrypted;
-                }
-                
+                const encrypted = await encryptText(text, config);
+                resultDiv.classList.remove('error');
+                outputDiv.textContent = encrypted;
                 resultDiv.classList.add('show');
             } catch (error) {
                 resultDiv.classList.add('error');
@@ -396,45 +376,24 @@
             const resultDiv = document.getElementById('decrypt-result');
             const outputDiv = document.getElementById('decrypt-output');
             
-            const data = {
-                text: document.getElementById('decrypt-text').value,
-                key: {
-                    PassPhrase: document.getElementById('decrypt-passphrase').value,
-                    SaltValue: document.getElementById('decrypt-salt').value,
-                    PasswordIterations: parseInt(document.getElementById('decrypt-iterations').value),
-                    Blocksize: parseInt(document.getElementById('decrypt-blocksize').value),
-                    InitVector: document.getElementById('decrypt-iv').value
-                }
+            const config = {
+                PassPhrase: document.getElementById('decrypt-passphrase').value,
+                SaltValue: document.getElementById('decrypt-salt').value,
+                PasswordIterations: parseInt(document.getElementById('decrypt-iterations').value),
+                Blocksize: parseInt(document.getElementById('decrypt-blocksize').value),
+                InitVector: document.getElementById('decrypt-iv').value
             };
 
+            const text = document.getElementById('decrypt-text').value;
+
             try {
-                const response = await fetch('/api/decrypt', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(`Server error (${response.status}): ${text}`);
+                if (config.InitVector.length !== 16) {
+                    throw new Error('InitVector must be exactly 16 characters');
                 }
 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
-                }
-
-                const result = await response.json();
-
-                if (result.error) {
-                    resultDiv.classList.add('error');
-                    outputDiv.textContent = result.error;
-                } else {
-                    resultDiv.classList.remove('error');
-                    outputDiv.textContent = result.decrypted;
-                }
-                
+                const decrypted = await decryptText(text, config);
+                resultDiv.classList.remove('error');
+                outputDiv.textContent = decrypted;
                 resultDiv.classList.add('show');
             } catch (error) {
                 resultDiv.classList.add('error');
