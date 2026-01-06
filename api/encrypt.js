@@ -1,4 +1,22 @@
-const { encrypt } = require("../lib/crypto");
+const crypto = require("crypto");
+
+function encrypt(clearText, key) {
+  const salt = Buffer.from(key.SaltValue, "ascii");
+  const iv = Buffer.from(key.InitVector, "ascii");
+
+  const derivedKey = crypto.pbkdf2Sync(
+    key.PassPhrase,
+    salt,
+    key.PasswordIterations,
+    key.Blocksize,
+    "sha1"
+  );
+
+  const cipher = crypto.createCipheriv("aes-256-cbc", derivedKey, iv);
+  let encrypted = cipher.update(clearText, "utf8", "base64");
+  encrypted += cipher.final("base64");
+  return encrypted;
+}
 
 module.exports = (req, res) => {
   // Enable CORS
