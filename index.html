@@ -438,6 +438,45 @@
                     <div class="result-text" id="encrypt-output-pbkdf2"></div>
                 </div>
             </div>
+
+            <!-- C# COMPATIBLE METHOD -->
+            <div id="encrypt-csharp-mode" class="encryption-mode" style="display: none;">
+                <div class="info-box">
+                    <strong>C# Compatible Encryption:</strong> Encrypts messages using C# compatible AES-CBC with UTF-8 key and zero IV.
+                    <br><br>
+                    <strong>Output:</strong> Base64-encoded encrypted data that can be directly decrypted in C# using the same key
+                </div>
+
+                <form id="encrypt-form-csharp">
+                    <div class="form-group">
+                        <label for="encrypt-text-csharp">Text to Encrypt:</label>
+                        <textarea id="encrypt-text-csharp" placeholder="Enter the text you want to encrypt..." required></textarea>
+                    </div>
+
+                    <div class="key-params">
+                        <div class="form-group">
+                            <label for="encrypt-key-csharp">Client Key (UTF-8):</label>
+                            <input type="text" id="encrypt-key-csharp" placeholder="Enter the exact key to use for encryption" value="" required>
+                        </div>
+                    </div>
+
+                    <div style="background: #e7f3ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; color: #004085;">
+                        <strong>Key Size Info:</strong>
+                        <ul style="margin-top: 8px; margin-bottom: 0; padding-left: 20px;">
+                            <li>Keys with 16 UTF-8 bytes = AES-128</li>
+                            <li>Keys with 24 UTF-8 bytes = AES-192</li>
+                            <li>Keys with other lengths = AES-256 (padded/truncated)</li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="btn">🔒 Encrypt</button>
+                </form>
+
+                <div id="encrypt-result-csharp" class="result">
+                    <div class="result-label">Encrypted Result (Base64):</div>
+                    <div class="result-text" id="encrypt-output-csharp"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Decrypt Tab -->
@@ -637,6 +676,7 @@
             // Update encrypt modes
             document.getElementById('encrypt-clientkey-mode').style.display = mode === 'clientkey' ? 'block' : 'none';
             document.getElementById('encrypt-pbkdf2-mode').style.display = mode === 'pbkdf2' ? 'block' : 'none';
+            document.getElementById('encrypt-csharp-mode').style.display = mode === 'csharp' ? 'block' : 'none';
             
             // Update decrypt modes
             document.getElementById('decrypt-clientkey-mode').style.display = mode === 'clientkey' ? 'block' : 'none';
@@ -844,6 +884,36 @@
         });
 
         // ===== C# COMPATIBLE METHOD =====
+
+        // C# Compatible Encrypt form handler
+        document.getElementById('encrypt-form-csharp').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('encrypt-result-csharp');
+            const outputDiv = document.getElementById('encrypt-output-csharp');
+            
+            const plainText = document.getElementById('encrypt-text-csharp').value;
+            const clientKey = document.getElementById('encrypt-key-csharp').value;
+
+            try {
+                if (!plainText || plainText.trim() === '') {
+                    throw new Error('Text to encrypt is required');
+                }
+
+                if (!clientKey || clientKey.trim() === '') {
+                    throw new Error('Client Key is required');
+                }
+
+                const encrypted = await encryptCSharp(plainText, clientKey);
+                resultDiv.classList.remove('error');
+                outputDiv.textContent = encrypted;
+                resultDiv.classList.add('show');
+            } catch (error) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: ' + error.message;
+                resultDiv.classList.add('show');
+            }
+        });
 
         // C# Compatible Decrypt form handler
         document.getElementById('decrypt-form-csharp').addEventListener('submit', async (e) => {

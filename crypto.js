@@ -85,7 +85,7 @@ async function importClientKeyDirect(clientKey, keySize = 32) {
     key,
     { name: "AES-CBC" },
     false,
-    ["decrypt"]
+    ["encrypt", "decrypt"]
   );
 }
 
@@ -338,4 +338,50 @@ async function decryptCSharp(cipherText, clientKey) {
   }
 }
 
+// ===== C# COMPATIBLE ENCRYPTION =====
+// Encrypts text using C# compatible AES-CBC with direct UTF-8 key and zero IV
+async function encryptCSharp(plainText, clientKey) {
+  try {
+    const enc = new TextEncoder();
+    
+    // Create zero-filled IV (16 bytes of zeros - matches C# default)
+    const iv = new Uint8Array(16);
+    
+    // Import key (direct UTF-8, no hashing) - use natural key length or default to 32
+    const keyBytes = enc.encode(clientKey);
+    let keySize = 32; // default to 256-bit AES
+    
+    // If key is exactly 16 or 24 bytes, use that size
+    if (keyBytes.length === 16) {
+      keySize = 16;
+    } else if (keyBytes.length === 24) {
+      keySize = 24;
+    }
+    
+    const key = await importClientKeyDirect(clientKey, keySize);
+    
+    // Encrypt using AES-CBC
+    const encrypted = await crypto.subtle.encrypt(
+      {
+        name: "AES-CBC",
+        iv: iv
+      },
+      key,
+      enc.encode(plainText)
+    );
+    
+    // Convert to Base64
+    const encryptedArray = new Uint8Array(encrypted);
+    let binary = '';
+    for (let i = 0; i < encryptedArray.length; i++) {
+      binary += String.fromCharCode(encryptedArray[i]);
+    }
+    
+    return btoa(binary);
+  } catch (error) {
+    throw new Error("C# Encryption failed: " + error.message);
+  }
+}
+
 window.decryptCSharp = decryptCSharp;
+window.encryptCSharp = encryptCSharp;
