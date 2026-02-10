@@ -113,6 +113,16 @@
             border-color: #667eea;
         }
 
+        select {
+            border-color: #e0e0e0;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         textarea {
             resize: vertical;
             min-height: 120px;
@@ -123,6 +133,63 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
+        }
+
+        .algorithm-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .algorithm-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .algorithm-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .algorithm-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .algo-option {
+            display: none;
+        }
+
+        .algo-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .algo-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .algo-option:checked + .algo-label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .algo-label input {
+            margin-right: 8px;
+            width: auto;
         }
 
         .btn {
@@ -232,97 +299,320 @@
             <button class="tab" onclick="switchTab('decrypt')">Decrypt</button>
         </div>
 
+        <!-- Mode Selector -->
+        <div class="tabs" style="border-bottom: 1px solid #e0e0e0; margin-bottom: 20px;">
+            <button class="tab active" onclick="switchMode('clientkey')" id="mode-clientkey-btn">🔑 Client Key Method</button>
+            <button class="tab" onclick="switchMode('pbkdf2')" id="mode-pbkdf2-btn">🔐 PBKDF2 Method (Original)</button>
+            <button class="tab" onclick="switchMode('csharp')" id="mode-csharp-btn">🔷 C# Compatible</button>
+        </div>
+
         <!-- Encrypt Tab -->
         <div id="encrypt-tab" class="tab-content active">
-            <div class="info-box">
-                <strong>Note:</strong> Enter your plaintext and encryption parameters below. Keep your parameters safe - you'll need them to decrypt the message later.
+            <!-- CLIENT KEY METHOD -->
+            <div id="encrypt-clientkey-mode" class="encryption-mode">
+                <div class="info-box">
+                    <strong>Note:</strong> Select your encryption algorithm, enter your plaintext and client key. The IV can be auto-generated or manually provided.
+                </div>
+
+                <form id="encrypt-form-clientkey">
+                    <!-- Algorithm Selection -->
+                    <div class="algorithm-section">
+                        <h3>🔐 Select Encryption Algorithm</h3>
+                        
+                        <div>
+                            <label style="font-weight: 600; margin-bottom: 12px; display: block; color: #667eea;">AES-CBC (Cipher Block Chaining)</label>
+                            <div class="algorithm-group">
+                                <input type="radio" name="encrypt-algo-ck" id="encrypt-algo-cbc128" value="AES-128-CBC" class="algo-option">
+                                <label for="encrypt-algo-cbc128" class="algo-label">
+                                    <span>AES-128-CBC</span>
+                                </label>
+
+                                <input type="radio" name="encrypt-algo-ck" id="encrypt-algo-cbc192" value="AES-192-CBC" class="algo-option">
+                                <label for="encrypt-algo-cbc192" class="algo-label">
+                                    <span>AES-192-CBC</span>
+                                </label>
+
+                                <input type="radio" name="encrypt-algo-ck" id="encrypt-algo-cbc256" value="AES-256-CBC" checked class="algo-option">
+                                <label for="encrypt-algo-cbc256" class="algo-label">
+                                    <span>AES-256-CBC ✓</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <label style="font-weight: 600; margin-bottom: 12px; display: block; color: #764ba2;">AES-GCM (Galois/Counter Mode - Authenticated)</label>
+                            <div class="algorithm-group">
+                                <input type="radio" name="encrypt-algo-ck" id="encrypt-algo-gcm128" value="AES-128-GCM" class="algo-option">
+                                <label for="encrypt-algo-gcm128" class="algo-label">
+                                    <span>AES-128-GCM</span>
+                                </label>
+
+                                <input type="radio" name="encrypt-algo-ck" id="encrypt-algo-gcm192" value="AES-192-GCM" class="algo-option">
+                                <label for="encrypt-algo-gcm192" class="algo-label">
+                                    <span>AES-192-GCM</span>
+                                </label>
+
+                                <input type="radio" name="encrypt-algo-ck" id="encrypt-algo-gcm256" value="AES-256-GCM" class="algo-option">
+                                <label for="encrypt-algo-gcm256" class="algo-label">
+                                    <span>AES-256-GCM</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="encrypt-text-ck">Text to Encrypt:</label>
+                        <textarea id="encrypt-text-ck" placeholder="Enter the text you want to encrypt..." required></textarea>
+                    </div>
+
+                    <div class="key-params">
+                        <div class="form-group">
+                            <label for="encrypt-key-ck">Client Key:</label>
+                            <input type="text" id="encrypt-key-ck" placeholder="Your secret client key" value="MySecretKey123" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <input type="checkbox" id="encrypt-generate-iv-ck" checked style="width: auto; margin-right: 10px;">
+                            <span>Auto-generate IV from client key bytes</span>
+                        </label>
+                    </div>
+
+                    <div id="encrypt-iv-section-ck">
+                        <div class="form-group">
+                            <label for="encrypt-iv-ck">Init Vector (16 chars) - Manual:</label>
+                            <input type="text" id="encrypt-iv-ck" placeholder="1234567890123456" maxlength="16">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">🔒 Encrypt</button>
+                </form>
+
+                <div id="encrypt-result-ck" class="result">
+                    <div class="result-label">Encrypted Result:</div>
+                    <div class="result-text" id="encrypt-output-ck"></div>
+                </div>
             </div>
 
-            <form id="encrypt-form">
-                <div class="form-group">
-                    <label for="encrypt-text">Text to Encrypt:</label>
-                    <textarea id="encrypt-text" placeholder="Enter the text you want to encrypt..." required></textarea>
+            <!-- PBKDF2 METHOD -->
+            <div id="encrypt-pbkdf2-mode" class="encryption-mode" style="display: none;">
+                <div class="info-box">
+                    <strong>Note:</strong> Enter your plaintext and encryption parameters below. Keep your parameters safe - you'll need them to decrypt the message later.
                 </div>
 
-                <div class="key-params">
+                <form id="encrypt-form-pbkdf2">
                     <div class="form-group">
-                        <label for="encrypt-passphrase">PassPhrase:</label>
-                        <input type="text" id="encrypt-passphrase" placeholder="MySecretPassphrase" value="MySecretPassphrase" required>
+                        <label for="encrypt-text-pbkdf2">Text to Encrypt:</label>
+                        <textarea id="encrypt-text-pbkdf2" placeholder="Enter the text you want to encrypt..." required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="encrypt-salt">Salt Value:</label>
-                        <input type="text" id="encrypt-salt" placeholder="MySaltValue" value="MySaltValue" required>
+
+                    <div class="key-params">
+                        <div class="form-group">
+                            <label for="encrypt-passphrase">PassPhrase:</label>
+                            <input type="text" id="encrypt-passphrase" placeholder="MySecretPassphrase" value="MySecretPassphrase" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="encrypt-salt">Salt Value:</label>
+                            <input type="text" id="encrypt-salt" placeholder="MySaltValue" value="MySaltValue" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="encrypt-iterations">Iterations:</label>
+                            <input type="number" id="encrypt-iterations" value="1000" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="encrypt-blocksize">Block Size:</label>
+                            <input type="number" id="encrypt-blocksize" value="32" min="16" max="32" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="encrypt-iv-pbkdf2">Init Vector (16 chars):</label>
+                            <input type="text" id="encrypt-iv-pbkdf2" placeholder="1234567890123456" value="1234567890123456" maxlength="16" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="encrypt-iterations">Iterations:</label>
-                        <input type="number" id="encrypt-iterations" value="1000" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="encrypt-blocksize">Block Size:</label>
-                        <input type="number" id="encrypt-blocksize" value="32" min="16" max="32" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="encrypt-iv">Init Vector (16 chars):</label>
-                        <input type="text" id="encrypt-iv" placeholder="1234567890123456" value="1234567890123456" maxlength="16" required>
-                    </div>
+
+                    <button type="submit" class="btn">🔒 Encrypt</button>
+                </form>
+
+                <div id="encrypt-result-pbkdf2" class="result">
+                    <div class="result-label">Encrypted Result:</div>
+                    <div class="result-text" id="encrypt-output-pbkdf2"></div>
                 </div>
-
-                <button type="submit" class="btn">🔒 Encrypt</button>
-            </form>
-
-            <div id="encrypt-result" class="result">
-                <div class="result-label">Encrypted Result:</div>
-                <div class="result-text" id="encrypt-output"></div>
             </div>
         </div>
 
         <!-- Decrypt Tab -->
         <div id="decrypt-tab" class="tab-content">
-            <div class="info-box">
-                <strong>Note:</strong> Enter the encrypted text and the same parameters used during encryption to decrypt the message.
+            <!-- CLIENT KEY METHOD -->
+            <div id="decrypt-clientkey-mode" class="encryption-mode">
+                <div class="info-box">
+                    <strong>Note:</strong> Select the same encryption algorithm used during encryption, then enter the encrypted text and client key to decrypt.
+                </div>
+
+                <form id="decrypt-form-clientkey">
+                    <!-- Algorithm Selection -->
+                    <div class="algorithm-section">
+                        <h3>🔐 Select Encryption Algorithm</h3>
+                        
+                        <div>
+                            <label style="font-weight: 600; margin-bottom: 12px; display: block; color: #667eea;">AES-CBC (Cipher Block Chaining)</label>
+                            <div class="algorithm-group">
+                                <input type="radio" name="decrypt-algo-ck" id="decrypt-algo-cbc128" value="AES-128-CBC" class="algo-option">
+                                <label for="decrypt-algo-cbc128" class="algo-label">
+                                    <span>AES-128-CBC</span>
+                                </label>
+
+                                <input type="radio" name="decrypt-algo-ck" id="decrypt-algo-cbc192" value="AES-192-CBC" class="algo-option">
+                                <label for="decrypt-algo-cbc192" class="algo-label">
+                                    <span>AES-192-CBC</span>
+                                </label>
+
+                                <input type="radio" name="decrypt-algo-ck" id="decrypt-algo-cbc256" value="AES-256-CBC" checked class="algo-option">
+                                <label for="decrypt-algo-cbc256" class="algo-label">
+                                    <span>AES-256-CBC ✓</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <label style="font-weight: 600; margin-bottom: 12px; display: block; color: #764ba2;">AES-GCM (Galois/Counter Mode - Authenticated)</label>
+                            <div class="algorithm-group">
+                                <input type="radio" name="decrypt-algo-ck" id="decrypt-algo-gcm128" value="AES-128-GCM" class="algo-option">
+                                <label for="decrypt-algo-gcm128" class="algo-label">
+                                    <span>AES-128-GCM</span>
+                                </label>
+
+                                <input type="radio" name="decrypt-algo-ck" id="decrypt-algo-gcm192" value="AES-192-GCM" class="algo-option">
+                                <label for="decrypt-algo-gcm192" class="algo-label">
+                                    <span>AES-192-GCM</span>
+                                </label>
+
+                                <input type="radio" name="decrypt-algo-ck" id="decrypt-algo-gcm256" value="AES-256-GCM" class="algo-option">
+                                <label for="decrypt-algo-gcm256" class="algo-label">
+                                    <span>AES-256-GCM</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="decrypt-text-ck">Encrypted Text:</label>
+                        <textarea id="decrypt-text-ck" placeholder="Enter the encrypted text (Base64 or IV:Base64)..." required></textarea>
+                    </div>
+
+                    <div class="key-params">
+                        <div class="form-group">
+                            <label for="decrypt-key-ck">Client Key:</label>
+                            <input type="text" id="decrypt-key-ck" placeholder="Your secret client key" value="MySecretKey123" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <input type="checkbox" id="decrypt-generate-iv-ck" checked style="width: auto; margin-right: 10px;">
+                            <span>Use auto-generated IV (IV:Base64 format)</span>
+                        </label>
+                    </div>
+
+                    <div id="decrypt-iv-section-ck">
+                        <div class="form-group">
+                            <label for="decrypt-iv-ck">Init Vector (16 chars) - Manual:</label>
+                            <input type="text" id="decrypt-iv-ck" placeholder="1234567890123456" maxlength="16">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">🔓 Decrypt</button>
+                </form>
+
+                <div id="decrypt-result-ck" class="result">
+                    <div class="result-label">Decrypted Result:</div>
+                    <div class="result-text" id="decrypt-output-ck"></div>
+                </div>
             </div>
 
-            <form id="decrypt-form">
-                <div class="form-group">
-                    <label for="decrypt-text">Encrypted Text:</label>
-                    <textarea id="decrypt-text" placeholder="Enter the encrypted text (Base64)..." required></textarea>
+            <!-- PBKDF2 METHOD -->
+            <div id="decrypt-pbkdf2-mode" class="encryption-mode" style="display: none;">
+                <div class="info-box">
+                    <strong>Note:</strong> Enter the encrypted text and the same parameters used during encryption to decrypt the message.
                 </div>
 
-                <div class="key-params">
+                <form id="decrypt-form-pbkdf2">
                     <div class="form-group">
-                        <label for="decrypt-passphrase">PassPhrase:</label>
-                        <input type="text" id="decrypt-passphrase" placeholder="MySecretPassphrase" value="MySecretPassphrase" required>
+                        <label for="decrypt-text-pbkdf2">Encrypted Text:</label>
+                        <textarea id="decrypt-text-pbkdf2" placeholder="Enter the encrypted text (Base64)..." required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="decrypt-salt">Salt Value:</label>
-                        <input type="text" id="decrypt-salt" placeholder="MySaltValue" value="MySaltValue" required>
+
+                    <div class="key-params">
+                        <div class="form-group">
+                            <label for="decrypt-passphrase">PassPhrase:</label>
+                            <input type="text" id="decrypt-passphrase" placeholder="MySecretPassphrase" value="MySecretPassphrase" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="decrypt-salt">Salt Value:</label>
+                            <input type="text" id="decrypt-salt" placeholder="MySaltValue" value="MySaltValue" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="decrypt-iterations">Iterations:</label>
+                            <input type="number" id="decrypt-iterations" value="1000" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="decrypt-blocksize">Block Size:</label>
+                            <input type="number" id="decrypt-blocksize" value="32" min="16" max="32" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="decrypt-iv-pbkdf2">Init Vector (16 chars):</label>
+                            <input type="text" id="decrypt-iv-pbkdf2" placeholder="1234567890123456" value="1234567890123456" maxlength="16" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="decrypt-iterations">Iterations:</label>
-                        <input type="number" id="decrypt-iterations" value="1000" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="decrypt-blocksize">Block Size:</label>
-                        <input type="number" id="decrypt-blocksize" value="32" min="16" max="32" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="decrypt-iv">Init Vector (16 chars):</label>
-                        <input type="text" id="decrypt-iv" placeholder="1234567890123456" value="1234567890123456" maxlength="16" required>
-                    </div>
+
+                    <button type="submit" class="btn">🔓 Decrypt</button>
+                </form>
+
+                <div id="decrypt-result-pbkdf2" class="result">
+                    <div class="result-label">Decrypted Result:</div>
+                    <div class="result-text" id="decrypt-output-pbkdf2"></div>
+                </div>
+            </div>
+
+            <!-- C# COMPATIBLE METHOD -->
+            <div id="decrypt-csharp-mode" class="encryption-mode" style="display: none;">
+                <div class="info-box">
+                    <strong>C# Compatible Decryption:</strong> Decrypts messages encrypted with C# AES-CBC using UTF-8 key and zero IV.
+                    <br><br>
+                    <strong>Expected Input:</strong> Base64-encoded encrypted data (spaces and line breaks will be automatically handled)
                 </div>
 
-                <button type="submit" class="btn">🔓 Decrypt</button>
-            </form>
+                <form id="decrypt-form-csharp">
+                    <div class="form-group">
+                        <label for="decrypt-text-csharp">Encrypted Text (Base64):</label>
+                        <textarea id="decrypt-text-csharp" placeholder="Paste Base64 encrypted text here... Spaces are fine, they'll be converted to + automatically" required></textarea>
+                    </div>
 
-            <div id="decrypt-result" class="result">
-                <div class="result-label">Decrypted Result:</div>
-                <div class="result-text" id="decrypt-output"></div>
+                    <div class="key-params">
+                        <div class="form-group">
+                            <label for="decrypt-key-csharp">Client Key (UTF-8):</label>
+                            <input type="text" id="decrypt-key-csharp" placeholder="Enter the exact key used in C# encryption" value="" required>
+                        </div>
+                    </div>
+
+                    <div style="background: #fff3cd; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; color: #856404;">
+                        <strong>Note:</strong> This uses AES-CBC with a zero-filled IV (16 bytes of zeros) and direct UTF-8 key encoding, matching the C# Aes.Create() defaults.
+                    </div>
+
+                    <button type="submit" class="btn">🔓 Decrypt</button>
+                </form>
+
+                <div id="decrypt-result-csharp" class="result">
+                    <div class="result-label">Decrypted Result:</div>
+                    <div class="result-text" id="decrypt-output-csharp"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="crypto.js"></script>
     <script>
+        let currentMode = 'clientkey';
+
         function switchTab(tab) {
             // Update tab buttons
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -336,22 +626,172 @@
             document.querySelectorAll('.result').forEach(r => r.classList.remove('show'));
         }
 
-        // Encrypt form handler
-        document.getElementById('encrypt-form').addEventListener('submit', async (e) => {
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Update mode buttons
+            document.getElementById('mode-clientkey-btn').classList.toggle('active', mode === 'clientkey');
+            document.getElementById('mode-pbkdf2-btn').classList.toggle('active', mode === 'pbkdf2');
+            document.getElementById('mode-csharp-btn').classList.toggle('active', mode === 'csharp');
+            
+            // Update encrypt modes
+            document.getElementById('encrypt-clientkey-mode').style.display = mode === 'clientkey' ? 'block' : 'none';
+            document.getElementById('encrypt-pbkdf2-mode').style.display = mode === 'pbkdf2' ? 'block' : 'none';
+            
+            // Update decrypt modes
+            document.getElementById('decrypt-clientkey-mode').style.display = mode === 'clientkey' ? 'block' : 'none';
+            document.getElementById('decrypt-pbkdf2-mode').style.display = mode === 'pbkdf2' ? 'block' : 'none';
+            document.getElementById('decrypt-csharp-mode').style.display = mode === 'csharp' ? 'block' : 'none';
+            
+            // Hide results
+            document.querySelectorAll('.result').forEach(r => r.classList.remove('show'));
+        }
+
+        // ===== CLIENT KEY METHOD =====
+        
+        // Toggle IV input visibility for Client Key method (Encrypt)
+        document.getElementById('encrypt-generate-iv-ck').addEventListener('change', (e) => {
+            const ivSection = document.getElementById('encrypt-iv-section-ck');
+            const ivInput = document.getElementById('encrypt-iv-ck');
+            if (e.target.checked) {
+                ivSection.style.display = 'none';
+                ivInput.removeAttribute('required');
+            } else {
+                ivSection.style.display = 'block';
+                ivInput.setAttribute('required', 'required');
+            }
+        });
+
+        // Toggle IV input visibility for Client Key method (Decrypt)
+        document.getElementById('decrypt-generate-iv-ck').addEventListener('change', (e) => {
+            const ivSection = document.getElementById('decrypt-iv-section-ck');
+            const ivInput = document.getElementById('decrypt-iv-ck');
+            if (e.target.checked) {
+                ivSection.style.display = 'none';
+                ivInput.removeAttribute('required');
+            } else {
+                ivSection.style.display = 'block';
+                ivInput.setAttribute('required', 'required');
+            }
+        });
+
+        // Initialize visibility for Client Key method
+        document.getElementById('encrypt-iv-section-ck').style.display = 'none';
+        document.getElementById('decrypt-iv-section-ck').style.display = 'none';
+
+        // Client Key Encrypt form handler
+        document.getElementById('encrypt-form-clientkey').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const resultDiv = document.getElementById('encrypt-result');
-            const outputDiv = document.getElementById('encrypt-output');
+            const resultDiv = document.getElementById('encrypt-result-ck');
+            const outputDiv = document.getElementById('encrypt-output-ck');
+            
+            const generateIV = document.getElementById('encrypt-generate-iv-ck').checked;
+            const selectedAlgo = document.querySelector('input[name="encrypt-algo-ck"]:checked');
+            
+            if (!selectedAlgo) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: Please select an encryption algorithm';
+                resultDiv.classList.add('show');
+                return;
+            }
             
             const config = {
+                method: 'clientkey',
+                clientKey: document.getElementById('encrypt-key-ck').value,
+                encryptionType: selectedAlgo.value,
+                generateIV: generateIV,
+                InitVector: generateIV ? '' : document.getElementById('encrypt-iv-ck').value
+            };
+
+            const text = document.getElementById('encrypt-text-ck').value;
+
+            try {
+                if (!generateIV && config.InitVector.length !== 16) {
+                    throw new Error('InitVector must be exactly 16 characters when not auto-generating');
+                }
+
+                if (!config.clientKey || config.clientKey.trim() === '') {
+                    throw new Error('Client Key is required');
+                }
+
+                const encrypted = await encryptText(text, config);
+                resultDiv.classList.remove('error');
+                outputDiv.textContent = encrypted;
+                resultDiv.classList.add('show');
+            } catch (error) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: ' + error.message;
+                resultDiv.classList.add('show');
+            }
+        });
+
+        // Client Key Decrypt form handler
+        document.getElementById('decrypt-form-clientkey').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('decrypt-result-ck');
+            const outputDiv = document.getElementById('decrypt-output-ck');
+            
+            const generateIV = document.getElementById('decrypt-generate-iv-ck').checked;
+            const selectedAlgo = document.querySelector('input[name="decrypt-algo-ck"]:checked');
+            
+            if (!selectedAlgo) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: Please select an encryption algorithm';
+                resultDiv.classList.add('show');
+                return;
+            }
+            
+            const config = {
+                method: 'clientkey',
+                clientKey: document.getElementById('decrypt-key-ck').value,
+                encryptionType: selectedAlgo.value,
+                generateIV: generateIV,
+                InitVector: generateIV ? '' : document.getElementById('decrypt-iv-ck').value
+            };
+
+            const text = document.getElementById('decrypt-text-ck').value;
+
+            try {
+                if (!generateIV && config.InitVector.length !== 16) {
+                    throw new Error('InitVector must be exactly 16 characters when not auto-generating');
+                }
+
+                if (!config.clientKey || config.clientKey.trim() === '') {
+                    throw new Error('Client Key is required');
+                }
+
+                const decrypted = await decryptText(text, config);
+                resultDiv.classList.remove('error');
+                outputDiv.textContent = decrypted;
+                resultDiv.classList.add('show');
+            } catch (error) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: ' + error.message;
+                resultDiv.classList.add('show');
+            }
+        });
+
+        // ===== PBKDF2 METHOD =====
+
+        // PBKDF2 Encrypt form handler
+        document.getElementById('encrypt-form-pbkdf2').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('encrypt-result-pbkdf2');
+            const outputDiv = document.getElementById('encrypt-output-pbkdf2');
+            
+            const config = {
+                method: 'pbkdf2',
                 PassPhrase: document.getElementById('encrypt-passphrase').value,
                 SaltValue: document.getElementById('encrypt-salt').value,
                 PasswordIterations: parseInt(document.getElementById('encrypt-iterations').value),
                 Blocksize: parseInt(document.getElementById('encrypt-blocksize').value),
-                InitVector: document.getElementById('encrypt-iv').value
+                InitVector: document.getElementById('encrypt-iv-pbkdf2').value
             };
 
-            const text = document.getElementById('encrypt-text').value;
+            const text = document.getElementById('encrypt-text-pbkdf2').value;
 
             try {
                 if (config.InitVector.length !== 16) {
@@ -369,22 +809,23 @@
             }
         });
 
-        // Decrypt form handler
-        document.getElementById('decrypt-form').addEventListener('submit', async (e) => {
+        // PBKDF2 Decrypt form handler
+        document.getElementById('decrypt-form-pbkdf2').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const resultDiv = document.getElementById('decrypt-result');
-            const outputDiv = document.getElementById('decrypt-output');
+            const resultDiv = document.getElementById('decrypt-result-pbkdf2');
+            const outputDiv = document.getElementById('decrypt-output-pbkdf2');
             
             const config = {
+                method: 'pbkdf2',
                 PassPhrase: document.getElementById('decrypt-passphrase').value,
                 SaltValue: document.getElementById('decrypt-salt').value,
                 PasswordIterations: parseInt(document.getElementById('decrypt-iterations').value),
                 Blocksize: parseInt(document.getElementById('decrypt-blocksize').value),
-                InitVector: document.getElementById('decrypt-iv').value
+                InitVector: document.getElementById('decrypt-iv-pbkdf2').value
             };
 
-            const text = document.getElementById('decrypt-text').value;
+            const text = document.getElementById('decrypt-text-pbkdf2').value;
 
             try {
                 if (config.InitVector.length !== 16) {
@@ -392,6 +833,38 @@
                 }
 
                 const decrypted = await decryptText(text, config);
+                resultDiv.classList.remove('error');
+                outputDiv.textContent = decrypted;
+                resultDiv.classList.add('show');
+            } catch (error) {
+                resultDiv.classList.add('error');
+                outputDiv.textContent = 'Error: ' + error.message;
+                resultDiv.classList.add('show');
+            }
+        });
+
+        // ===== C# COMPATIBLE METHOD =====
+
+        // C# Compatible Decrypt form handler
+        document.getElementById('decrypt-form-csharp').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('decrypt-result-csharp');
+            const outputDiv = document.getElementById('decrypt-output-csharp');
+            
+            const cipherText = document.getElementById('decrypt-text-csharp').value;
+            const clientKey = document.getElementById('decrypt-key-csharp').value;
+
+            try {
+                if (!cipherText || cipherText.trim() === '') {
+                    throw new Error('Encrypted text is required');
+                }
+
+                if (!clientKey || clientKey.trim() === '') {
+                    throw new Error('Client Key is required');
+                }
+
+                const decrypted = await decryptCSharp(cipherText, clientKey);
                 resultDiv.classList.remove('error');
                 outputDiv.textContent = decrypted;
                 resultDiv.classList.add('show');
